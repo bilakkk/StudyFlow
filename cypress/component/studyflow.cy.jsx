@@ -1,4 +1,5 @@
 import { mount } from 'cypress/react';
+import { MemoryRouter } from 'react-router-dom';
 import App from '../../src/App';
 
 describe('StudyFlow Component', () => {
@@ -7,7 +8,11 @@ describe('StudyFlow Component', () => {
   });
 
   it('displays the login page when the user is not logged in', () => {
-    mount(<App />);
+    mount(
+      <MemoryRouter>
+        <App />
+      </MemoryRouter>
+    );
 
     cy.contains('h1', 'З поверненням!').should('be.visible');
     cy.get('input[type="email"]').should('be.visible');

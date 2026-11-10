@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   CalendarDays,
@@ -21,6 +22,9 @@ import {
 import styles from './App.module.css';
 
 function App() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
   const [isLoggedIn, setIsLoggedIn] = useState(
     () => localStorage.getItem('studyflowLoggedIn') === 'true'
   );
@@ -36,7 +40,16 @@ function App() {
     () => localStorage.getItem('studyflowUserName') || 'Софія Білак'
   );
 
-  const [active, setActive] = useState('Головна');
+  const active =
+    {
+      '/': 'Головна',
+      '/schedule': 'Розклад',
+      '/tasks': 'Завдання',
+      '/grades': 'Оцінки',
+      '/statistics': 'Статистика',
+      '/profile': 'Профіль',
+    }[location.pathname] || 'Головна';
+
   const [mobileMenu, setMobileMenu] = useState(false);
   const [selectedDay, setSelectedDay] = useState(0);
 
@@ -69,16 +82,21 @@ function App() {
   const [newDate, setNewDate] = useState('');
 
   const menu = [
-    { name: 'Головна', icon: LayoutDashboard },
-    { name: 'Розклад', icon: CalendarDays },
-    { name: 'Завдання', icon: ClipboardList },
-    { name: 'Оцінки', icon: GraduationCap },
-    { name: 'Статистика', icon: ChartNoAxesColumn },
-    { name: 'Профіль', icon: UserRound },
+    { name: 'Головна', icon: LayoutDashboard, path: '/' },
+    { name: 'Розклад', icon: CalendarDays, path: '/schedule' },
+    { name: 'Завдання', icon: ClipboardList, path: '/tasks' },
+    { name: 'Оцінки', icon: GraduationCap, path: '/grades' },
+    { name: 'Статистика', icon: ChartNoAxesColumn, path: '/statistics' },
+    { name: 'Профіль', icon: UserRound, path: '/profile' },
   ];
 
   const lessons = [
-    { time: '09:00', subject: 'Програмування', detail: 'Лекція · Аудиторія 305', color: 'purple' },
+    {
+      time: '09:00',
+      subject: 'Програмування',
+      detail: 'Лекція · Аудиторія 305',
+      color: 'purple',
+    },
     {
       time: '11:00',
       subject: 'Математичний аналіз',
@@ -133,7 +151,7 @@ function App() {
     localStorage.setItem('studyflowLoggedIn', 'true');
 
     setIsLoggedIn(true);
-    setActive('Головна');
+    navigate('/');
     setAuthPassword('');
     setAuthConfirm('');
   }
@@ -151,6 +169,7 @@ function App() {
     setAuthEmail('');
     setUserName('Софія Білак');
     setAuthName('');
+    navigate('/');
   }
 
   function renderAuth() {
@@ -367,10 +386,20 @@ function App() {
           detail: 'Лекція · Аудиторія 202',
           color: 'purple',
         },
-        { time: '11:00', subject: 'Бази даних', detail: 'Практика · Аудиторія 105', color: 'blue' },
+        {
+          time: '11:00',
+          subject: 'Бази даних',
+          detail: 'Практика · Аудиторія 105',
+          color: 'blue',
+        },
       ],
       [
-        { time: '10:00', subject: 'Статистика', detail: 'Лекція · Аудиторія 301', color: 'purple' },
+        {
+          time: '10:00',
+          subject: 'Статистика',
+          detail: 'Лекція · Аудиторія 301',
+          color: 'purple',
+        },
         {
           time: '12:00',
           subject: 'Програмування',
@@ -393,8 +422,18 @@ function App() {
         },
       ],
       [
-        { time: '10:00', subject: 'Бази даних', detail: 'Лекція · Аудиторія 105', color: 'pink' },
-        { time: '12:00', subject: 'Статистика', detail: 'Практика · Аудиторія 301', color: 'blue' },
+        {
+          time: '10:00',
+          subject: 'Бази даних',
+          detail: 'Лекція · Аудиторія 105',
+          color: 'pink',
+        },
+        {
+          time: '12:00',
+          subject: 'Статистика',
+          detail: 'Практика · Аудиторія 301',
+          color: 'blue',
+        },
       ],
       [],
       [],
@@ -622,7 +661,7 @@ function App() {
                     <h3>Розклад на сьогодні</h3>
                     <p>Твій навчальний день</p>
                   </div>
-                  <button className={styles['text-btn']} onClick={() => setActive('Розклад')}>
+                  <button className={styles['text-btn']} onClick={() => navigate('/schedule')}>
                     Увесь розклад <ArrowUpRight size={15} />
                   </button>
                 </div>
@@ -645,7 +684,7 @@ function App() {
                     <h3>Найближчі завдання</h3>
                     <p>Тримай усе під контролем</p>
                   </div>
-                  <button className={styles['add-btn']} onClick={() => setActive('Завдання')}>
+                  <button className={styles['add-btn']} onClick={() => navigate('/tasks')}>
                     <Plus size={17} />
                   </button>
                 </div>
@@ -680,7 +719,9 @@ function App() {
                 <div className={styles['progress-track']}>
                   <div
                     style={{
-                      width: `${tasks.length ? (tasks.filter((t) => t.done).length / tasks.length) * 100 : 0}%`,
+                      width: `${
+                        tasks.length ? (tasks.filter((t) => t.done).length / tasks.length) * 100 : 0
+                      }%`,
                     }}
                   ></div>
                 </div>
@@ -712,17 +753,16 @@ function App() {
 
         <div className={styles['menu-label']}>МЕНЮ</div>
         <nav>
-          {menu.map(({ name, icon: Icon }) => (
-            <button
+          {menu.map(({ name, icon: Icon, path }) => (
+            <NavLink
               key={name}
-              className={`${styles['nav-item']} ${active === name ? styles.active : ''}`}
-              onClick={() => {
-                setActive(name);
-                setMobileMenu(false);
-              }}
+              to={path}
+              end={path === '/'}
+              className={({ isActive }) => `${styles['nav-item']} ${isActive ? styles.active : ''}`}
+              onClick={() => setMobileMenu(false)}
             >
               <Icon size={19} /> {name}
-            </button>
+            </NavLink>
           ))}
         </nav>
 
@@ -768,13 +808,83 @@ function App() {
         </header>
 
         <div className={styles['page-content']}>
-          {active !== 'Головна' && (
-            <div className={styles['page-title']}>
-              <h1>{active}</h1>
-              <p>Керуй своїм навчанням разом зі StudyFlow</p>
-            </div>
-          )}
-          {renderContent()}
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <>
+                  {active !== 'Головна' && (
+                    <div className={styles['page-title']}>
+                      <h1>{active}</h1>
+                      <p>Керуй своїм навчанням разом зі StudyFlow</p>
+                    </div>
+                  )}
+                  {renderContent()}
+                </>
+              }
+            />
+            <Route
+              path="/schedule"
+              element={
+                <>
+                  <div className={styles['page-title']}>
+                    <h1>Розклад</h1>
+                    <p>Керуй своїм навчанням разом зі StudyFlow</p>
+                  </div>
+                  {renderSchedule()}
+                </>
+              }
+            />
+            <Route
+              path="/tasks"
+              element={
+                <>
+                  <div className={styles['page-title']}>
+                    <h1>Завдання</h1>
+                    <p>Керуй своїм навчанням разом зі StudyFlow</p>
+                  </div>
+                  {renderTasks()}
+                </>
+              }
+            />
+            <Route
+              path="/grades"
+              element={
+                <>
+                  <div className={styles['page-title']}>
+                    <h1>Оцінки</h1>
+                    <p>Керуй своїм навчанням разом зі StudyFlow</p>
+                  </div>
+                  {renderGrades()}
+                </>
+              }
+            />
+            <Route
+              path="/statistics"
+              element={
+                <>
+                  <div className={styles['page-title']}>
+                    <h1>Статистика</h1>
+                    <p>Керуй своїм навчанням разом зі StudyFlow</p>
+                  </div>
+                  {renderStatistics()}
+                </>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <>
+                  <div className={styles['page-title']}>
+                    <h1>Профіль</h1>
+                    <p>Керуй своїм навчанням разом зі StudyFlow</p>
+                  </div>
+                  {renderProfile()}
+                </>
+              }
+            />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
         </div>
 
         <footer>© 2026 StudyFlow · Створено для твого комфортного навчання 💜</footer>
